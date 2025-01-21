@@ -5,7 +5,7 @@
 //
 // Endpoint:
 // POST /students/above-threshold
-//
+
 // Request Body:
 // {
 //   "threshold": <number>
@@ -34,16 +34,36 @@
 
 const express = require('express');
 const { resolve } = require('path');
+const data= require('./data.json')
 
 const app = express();
 const port = 3010;
 
 app.use(express.static('static'));
+app.use(express.json())
 
 app.get('/', (req, res) => {
   res.sendFile(resolve(__dirname, 'pages/index.html'));
 });
 
+app.post('/students/above-threshold', (req, res)=>{
+  const {threshold}=req.body;
+  if (typeof threshold!== 'number' || threshold<0){
+    res.status(400);
+    res.json({
+      error: 'Invalid threshold'});
+      return; 
+  };
+  const greater_than= data.filter((student, index)=>{
+    return student.total>threshold;
+  })
+
+  const total_count= greater_than.length;
+  return res.send({
+    total_count,
+    greater_than,
+  })
+})
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
